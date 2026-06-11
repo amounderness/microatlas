@@ -176,8 +176,47 @@ export async function updateDraftNation(formData: FormData) {
   }
 
   revalidatePath("/dashboard");
-revalidatePath("/dashboard/nations");
-revalidatePath(`/dashboard/nations/${id}/edit`);
-revalidatePath(`/dashboard/nations/${id}/claim`);
-redirect(`/dashboard/nations/${id}/edit?saved=1`);
+  revalidatePath("/dashboard/nations");
+  revalidatePath(`/dashboard/nations/${id}/edit`);
+  revalidatePath(`/dashboard/nations/${id}/claim`);
+  redirect(`/dashboard/nations/${id}/edit?saved=1`);
+}
+
+export async function submitNationForReview(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    redirect("/auth/login");
+  }
+
+  const nationId = cleanRequiredText(formData.get("nation_id"));
+
+  if (!nationId) {
+    redirect("/dashboard/nations");
+  }
+
+  const { error } = await supabase.rpc("submit_nation_for_review", {
+    p_nation_id: nationId,
+  });
+
+  if (error) {
+    redirect(
+      `/dashboard/nations/${nationId}/edit?error=${encodeURIComponent(
+        error.message
+      )}`
+    );
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/nations");
+  revalidatePath(`/dashboard/nations/${nationId}/edit`);
+  revalidatePath(`/dashboard/nations/${nationId}/claim`);
+  revalidatePath(`/dashboard/nations/${nationId}/flag`);
+
+  redirect(`/dashboard/nations/${nationId}/edit?submitted=1`);
 }
