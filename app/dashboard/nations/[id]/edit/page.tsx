@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import { updateDraftNation } from "../../actions";
+import { submitNationForReview, updateDraftNation } from "../../actions";
 
 type EditNationPageProps = {
   params: Promise<{
@@ -12,6 +12,7 @@ type EditNationPageProps = {
   searchParams?: Promise<{
     error?: string;
     saved?: string;
+    submitted?: string;
   }>;
 };
 
@@ -78,6 +79,44 @@ async function EditNationForm({ params, searchParams }: EditNationPageProps) {
     );
   }
 
+const [{ data: claim }, { data: flagAsset }, { data: queueEntry }] =
+  await Promise.all([
+    supabase
+      .from("nation_claims")
+      .select("id")
+      .eq("nation_id", nation.id)
+      .maybeSingle(),
+
+    supabase
+      .from("nation_assets")
+      .select("id, status")
+      .eq("nation_id", nation.id)
+      .eq("asset_type", "flag")
+      .maybeSingle(),
+
+    supabase
+      .from("moderation_queue")
+      .select("id, status, created_at")
+      .eq("target_type", "nation")
+      .eq("target_id", nation.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+const detailsComplete =
+  nation.name.trim().length >= 2 &&
+  nation.short_description.trim().length >= 10;
+
+const claimComplete = Boolean(claim?.id);
+const flagComplete = Boolean(flagAsset?.id);
+
+const isDraft = nation.status === "draft";
+const isSubmitted = nation.status === "submitted";
+
+const readyToSubmit =
+  isDraft && detailsComplete && claimComplete && flagComplete;
+
   return (
     <main className="mx-auto max-w-3xl p-8">
       <Link href="/dashboard/nations" className="text-sm text-muted-foreground">
@@ -101,6 +140,77 @@ async function EditNationForm({ params, searchParams }: EditNationPageProps) {
             Changes saved.
         </div>
       ) : null}
+
+      {query?.submitted ? (
+        <div className="mt-6 rounded-md border p-4 text-sm">
+            Nation submitted for review.
+        </div>
+      ) : null}
+
+    <section className="mt-8 rounded-lg border p-6">
+        <h2 className="text-xl font-medium">Submission readiness</h2>
+
+        <p className="mt-2 text-sm text-muted-foreground">
+            A nation can only be submitted once its details, map claim, and flag upload
+            are complete.
+        </p>
+
+        <div className="mt-5 space-y-3 text-sm">
+            <div className="flex items-center justify-between gap-4">
+            <span>Details complete</span>
+            <span>{detailsComplete ? "Complete" : "Incomplete"}</span>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+             <span>Map claim added</span>
+             <span>{claimComplete ? "Complete" : "Missing"}</span>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <span>Flag uploaded</span>
+              <span>{flagComplete ? "Complete" : "Missing"}</span>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+             <span>Current status</span>
+             <span>{nation.status}</span>
+            </div>
+
+            {queueEntry ? (
+             <div className="flex items-center justify-between gap-4">
+                <span>Review queue</span>
+                <span>{queueEntry.status}</span>
+             </div>
+         ) : null}
+         </div>
+
+         {isSubmitted ? (
+          <div className="mt-6 rounded-md border p-4 text-sm">
+           This nation has been submitted for review. Editing is locked until a
+           moderator requests changes or completes review.
+         </div>
+        ) : null}
+
+        {isDraft ? (
+         <form action={submitNationForReview} className="mt-6">
+           <input type="hidden" name="nation_id" value={nation.id} />
+
+             <button
+               type="submit"
+               disabled={!readyToSubmit}
+               className="rounded-md border px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
+              >
+              Submit for review
+             </button>
+
+             {!readyToSubmit ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Complete all readiness checks before submitting.
+               </p>
+              ) : null}
+         </form>
+        ) : null}
+    </section>
 
       <form
         key={`${nation.id}-${nation.updated_at}`}
@@ -266,26 +376,34 @@ async function EditNationForm({ params, searchParams }: EditNationPageProps) {
         </label>
 
         <div className="flex flex-wrap gap-3">
-            <button
-              type="submit"
-              className="rounded-md border px-4 py-2 text-sm font-medium"
-            >
-              Save changes
-            </button>
+        {isDraft ? (
+            <>
+             <button
+               type="submit"
+                className="rounded-md border px-4 py-2 text-sm font-medium"
+              >
+                Save changes
+              </button>
 
-            <Link
-              href={`/dashboard/nations/${nation.id}/claim`}
-              className="inline-block rounded-md border px-4 py-2 text-sm font-medium"
-            >
-              Edit map claim
-            </Link>
+              <Link
+                href={`/dashboard/nations/${nation.id}/claim`}
+                className="inline-block rounded-md border px-4 py-2 text-sm font-medium"
+              >
+                Edit map claim
+              </Link>
 
-            <Link
-              href={`/dashboard/nations/${nation.id}/flag`}
-              className="inline-block rounded-md border px-4 py-2 text-sm font-medium"
-            >
-              Upload flag
-            </Link>
+              <Link
+                href={`/dashboard/nations/${nation.id}/flag`}
+                className="inline-block rounded-md border px-4 py-2 text-sm font-medium"
+              >
+                Upload flag
+              </Link>
+            </>
+        ) : (
+            <p className="text-sm text-muted-foreground">
+              Editing controls are locked while this nation is under review.
+            </p>
+        )}
         </div>
       </form>
     </main>
