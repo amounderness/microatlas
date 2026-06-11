@@ -102,12 +102,19 @@ async function DashboardContent() {
         </Link>
       </section>
 
-      <section className="mt-6 rounded-lg border p-6 opacity-70">
+      <section className="mt-6 rounded-lg border p-6">
         <h2 className="text-xl font-medium">My Nations</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Nation drafts will be added in Phase 3.
+            Create and manage private draft nation records.
         </p>
-      </section>
+
+        <Link
+            href="/dashboard/nations"
+            className="mt-6 inline-block rounded-md border px-4 py-2 text-sm font-medium"
+        >
+            Manage nations
+        </Link>
+        </section>
     </main>
   );
 }
