@@ -11,6 +11,7 @@ type EditNationPageProps = {
   }>;
   searchParams?: Promise<{
     error?: string;
+    saved?: string;
   }>;
 };
 
@@ -56,7 +57,7 @@ async function EditNationForm({ params, searchParams }: EditNationPageProps) {
   const { data: nation, error: nationError } = await supabase
     .from("nations")
     .select(
-      "id, name, short_description, long_description, capital, founded_date, website_url, status, visibility, creator_public, contact_public, fill_colour, border_colour, fill_opacity"
+        "id, name, short_description, long_description, capital, founded_date, website_url, status, visibility, creator_public, contact_public, fill_colour, border_colour, fill_opacity, updated_at"
     )
     .eq("id", id)
     .eq("owner_id", profile.id)
@@ -95,7 +96,17 @@ async function EditNationForm({ params, searchParams }: EditNationPageProps) {
         </div>
       ) : null}
 
-      <form action={updateDraftNation} className="mt-8 space-y-6">
+      {query?.saved ? (
+        <div className="mt-6 rounded-md border p-4 text-sm">
+            Changes saved.
+        </div>
+      ) : null}
+
+      <form
+        key={`${nation.id}-${nation.updated_at}`}
+        action={updateDraftNation}
+        className="mt-8 space-y-6"
+    >       
         <input type="hidden" name="id" value={nation.id} />
 
         <div>
@@ -254,12 +265,21 @@ async function EditNationForm({ params, searchParams }: EditNationPageProps) {
           Show public contact details later
         </label>
 
-        <button
-          type="submit"
-          className="rounded-md border px-4 py-2 text-sm font-medium"
-        >
-          Save changes
-        </button>
+        <div className="flex flex-wrap gap-3">
+            <button
+              type="submit"
+              className="rounded-md border px-4 py-2 text-sm font-medium"
+            >
+              Save changes
+            </button>
+
+            <Link
+              href={`/dashboard/nations/${nation.id}/claim`}
+              className="inline-block rounded-md border px-4 py-2 text-sm font-medium"
+            >
+              Edit map claim
+            </Link>
+        </div>
       </form>
     </main>
   );

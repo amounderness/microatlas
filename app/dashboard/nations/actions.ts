@@ -176,7 +176,8 @@ export async function updateDraftNation(formData: FormData) {
   }
 
   revalidatePath("/dashboard");
-  revalidatePath("/dashboard/nations");
-  revalidatePath(`/dashboard/nations/${id}/edit`);
-  redirect("/dashboard/nations");
+revalidatePath("/dashboard/nations");
+revalidatePath(`/dashboard/nations/${id}/edit`);
+revalidatePath(`/dashboard/nations/${id}/claim`);
+redirect(`/dashboard/nations/${id}/edit?saved=1`);
 }
