@@ -279,6 +279,13 @@ async function EditNationForm({ params, searchParams }: EditNationPageProps) {
             >
               Edit map claim
             </Link>
+
+            <Link
+              href={`/dashboard/nations/${nation.id}/flag`}
+              className="inline-block rounded-md border px-4 py-2 text-sm font-medium"
+            >
+              Upload flag
+            </Link>
         </div>
       </form>
     </main>
