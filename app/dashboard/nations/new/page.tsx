@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 
 import { createDraftNation } from "../actions";
@@ -8,9 +9,21 @@ type NewNationPageProps = {
   }>;
 };
 
-export default async function NewNationPage({
-  searchParams,
-}: NewNationPageProps) {
+export default function NewNationPage(props: NewNationPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto max-w-3xl p-8">
+          <h1 className="text-2xl font-semibold">Loading form...</h1>
+        </main>
+      }
+    >
+      <NewNationForm {...props} />
+    </Suspense>
+  );
+}
+
+async function NewNationForm({ searchParams }: NewNationPageProps) {
   const params = await searchParams;
 
   return (
