@@ -36,6 +36,23 @@ type DeletionNationSummary = {
   visibility: string;
 };
 
+type ReportItem = {
+  id: string;
+  target_type: string;
+  target_id: string;
+  reason: string;
+  status: string;
+  created_at: string;
+};
+
+type ReportNationSummary = {
+  id: string;
+  name: string;
+  short_description: string;
+  status: string;
+  visibility: string;
+};
+
 export default function AdminModerationPage() {
   return (
     <Suspense
@@ -83,6 +100,33 @@ async function ModerationQueue() {
     .select("id, status, created_at, target_id")
     .eq("target_type", "nation")
     .order("created_at", { ascending: false });
+
+  const { data: reports, error: reportsError } = await supabase
+  .from("reports")
+  .select("id, target_type, target_id, reason, status, created_at")
+  .in("status", ["open", "reviewing"])
+  .order("created_at", { ascending: false });
+
+  const typedReports = (reports || []) as ReportItem[];
+
+  const reportNationIds = typedReports
+  .filter((report) => report.target_type === "nation")
+  .map((report) => report.target_id);
+
+  const { data: reportNations } =
+  reportNationIds.length > 0
+    ? await supabase
+        .from("nations")
+        .select("id, name, short_description, status, visibility")
+        .in("id", reportNationIds)
+    : { data: [] };
+
+  const reportNationMap = new Map(
+  ((reportNations || []) as ReportNationSummary[]).map((nation) => [
+    nation.id,
+    nation,
+  ])
+  );
 
   if (queueError) {
     return (
@@ -257,6 +301,56 @@ async function ModerationQueue() {
           ) : (
             <div className="rounded-lg border p-5 text-sm text-muted-foreground">
               No pending deletion requests.
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-xl font-medium">Pending reports</h2>
+
+        <div className="mt-4 space-y-4">
+          {reportsError ? (
+            <div className="rounded-lg border border-red-500 p-5 text-sm text-red-500">
+              Reports could not be loaded: {reportsError.message}
+            </div>
+          ) : typedReports.length > 0 ? (
+            typedReports.map((report) => {
+              const nation =
+                report.target_type === "nation"
+                  ? reportNationMap.get(report.target_id)
+                  : null;
+
+              return (
+                <article key={report.id} className="rounded-lg border p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-medium">
+                        {nation?.name || "Unknown target"}
+                      </h3>
+
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Reason: {report.reason.replaceAll("_", " ")}
+                      </p>
+
+                      <p className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">
+                        Report status: {report.status}
+                      </p>
+                    </div>
+
+                    <Link
+                      href={`/admin/moderation/reports/${report.id}`}
+                      className="rounded-md border px-4 py-2 text-sm font-medium"
+                    >
+                      Review report
+                    </Link>
+                  </div>
+                </article>
+              );
+            })
+          ) : (
+            <div className="rounded-lg border p-5 text-sm text-muted-foreground">
+              No pending reports.
             </div>
           )}
         </div>
