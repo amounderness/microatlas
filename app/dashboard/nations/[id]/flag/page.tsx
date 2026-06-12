@@ -80,7 +80,7 @@ async function NationFlagContent({ params, searchParams }: FlagPageProps) {
     );
   }
 
-  if (nation.status !== "draft") {
+  if (!["draft", "needs_changes"].includes(nation.status)) {
     return (
       <main className="mx-auto max-w-4xl p-8">
         <Link
@@ -92,7 +92,7 @@ async function NationFlagContent({ params, searchParams }: FlagPageProps) {
 
         <h1 className="mt-4 text-2xl font-semibold">Flag locked</h1>
         <p className="mt-3 text-muted-foreground">
-          Only draft nations can have their flag edited.
+          Only draft or needs-changes nations can have their flag edited.
         </p>
       </main>
     );

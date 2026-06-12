@@ -71,8 +71,8 @@ async function getEditableDraftNation(
     return null;
   }
 
-  if (nation.status !== "draft") {
-    return null;
+  if (!["draft", "needs_changes"].includes(nation.status)) {
+  return null;
   }
 
   return nation;

@@ -111,11 +111,11 @@ const detailsComplete =
 const claimComplete = Boolean(claim?.id);
 const flagComplete = Boolean(flagAsset?.id);
 
-const isDraft = nation.status === "draft";
-const isSubmitted = nation.status === "submitted";
+const isEditable =
+  nation.status === "draft" || nation.status === "needs_changes";
 
 const readyToSubmit =
-  isDraft && detailsComplete && claimComplete && flagComplete;
+  isEditable && detailsComplete && claimComplete && flagComplete;
 
   return (
     <main className="mx-auto max-w-3xl p-8">
@@ -126,7 +126,8 @@ const readyToSubmit =
       <h1 className="mt-4 text-3xl font-semibold">Edit Nation</h1>
 
       <p className="mt-3 text-muted-foreground">
-        Status: {nation.status}. Draft entries remain private at this stage.
+        Status: {nation.status}. Nations can be edited while they are drafts or when
+        a moderator has requested changes.
       </p>
 
       {query?.error ? (
@@ -184,14 +185,14 @@ const readyToSubmit =
          ) : null}
          </div>
 
-         {isSubmitted ? (
-          <div className="mt-6 rounded-md border p-4 text-sm">
-           This nation has been submitted for review. Editing is locked until a
-           moderator requests changes or completes review.
-         </div>
-        ) : null}
+         {!isEditable ? (
+            <div className="mt-6 rounded-md border p-4 text-sm">
+                This nation is not currently editable. Editing is only available while it is
+                a draft or when a moderator has requested changes.
+            </div>
+         ) : null}
 
-        {isDraft ? (
+        {isEditable ? (
          <form action={submitNationForReview} className="mt-6">
            <input type="hidden" name="nation_id" value={nation.id} />
 
@@ -376,7 +377,7 @@ const readyToSubmit =
         </label>
 
         <div className="flex flex-wrap gap-3">
-        {isDraft ? (
+        {isEditable ? (
             <>
              <button
                type="submit"
@@ -401,7 +402,8 @@ const readyToSubmit =
             </>
         ) : (
             <p className="text-sm text-muted-foreground">
-              Editing controls are locked while this nation is under review.
+               Editing controls are locked unless this nation is a draft or has been returned
+               for changes.
             </p>
         )}
         </div>
