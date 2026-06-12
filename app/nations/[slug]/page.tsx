@@ -5,12 +5,17 @@ import { notFound } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import NationClaimPreviewWrapper from "@/components/map/nation-claim-preview-wrapper";
+import { submitNationReport } from "./actions";
 
 const FLAG_BUCKET = "nation-flags";
 
 type NationProfilePageProps = {
   params: Promise<{
     slug: string;
+  }>;
+  searchParams?: Promise<{
+    reported?: string;
+    report_error?: string;
   }>;
 };
 
@@ -28,8 +33,9 @@ export default function NationProfilePage(props: NationProfilePageProps) {
   );
 }
 
-async function NationProfile({ params }: NationProfilePageProps) {
+async function NationProfile({ params, searchParams }: NationProfilePageProps) {
   const { slug } = await params;
+  const query = await searchParams;
   const supabase = await createClient();
 
   const { data: nation, error: nationError } = await supabase
@@ -86,6 +92,18 @@ async function NationProfile({ params }: NationProfilePageProps) {
       <Link href="/atlas" className="text-sm text-muted-foreground">
         ← Back to atlas
       </Link>
+
+      {query?.reported ? (
+        <div className="mt-6 rounded-md border p-4 text-sm">
+           Report submitted. A moderator will review it.
+       </div>
+      ) : null}
+
+      {query?.report_error ? (
+        <div className="mt-6 rounded-md border border-red-500 p-4 text-sm text-red-500">
+          {query.report_error}
+        </div>
+      ) : null}
 
       <section className="mt-6 rounded-lg border p-6">
         <div className="grid gap-6 md:grid-cols-[220px_1fr]">
@@ -208,6 +226,77 @@ async function NationProfile({ params }: NationProfilePageProps) {
             No approved map claim is available.
           </p>
         )}
+      </section>
+
+      <section className="mt-8 rounded-lg border p-6">
+        <h2 className="text-xl font-medium">Report this entry</h2>
+
+        <p className="mt-3 text-sm text-muted-foreground">
+          Reports are reviewed by moderators. Use this for spam, abuse, privacy
+          concerns, impersonation, suspicious links, or other serious issues.
+        </p>
+
+        <form action={submitNationReport} className="mt-5 space-y-5">
+          <input type="hidden" name="target_id" value={nation.id} />
+          <input type="hidden" name="slug" value={nation.slug} />
+
+          <div>
+            <label htmlFor="report-reason" className="block text-sm font-medium">
+              Reason
+            </label>
+
+            <select
+              id="report-reason"
+              name="reason"
+              required
+              className="mt-2 w-full rounded-md border bg-background px-3 py-2"
+            >
+              <option value="">Select a reason</option>
+              <option value="spam">Spam</option>
+              <option value="abuse_or_harassment">Abuse or harassment</option>
+              <option value="privacy_or_personal_information">
+                Privacy or personal information
+              </option>
+              <option value="extremist_or_hateful_content">
+                Extremist or hateful content
+              </option>
+              <option value="impersonation">Impersonation</option>
+              <option value="pornographic_or_shock_content">
+                Pornographic or shock content
+              </option>
+              <option value="malware_or_suspicious_link">
+                Malware or suspicious link
+              </option>
+              <option value="disruptive_or_excessive_claim">
+                Disruptive or excessive claim
+              </option>
+              <option value="low_effort_or_nonsense">
+                Low-effort or nonsense entry
+              </option>
+              <option value="other">Other</option>
+            </select>
+          </div>   
+          <div>
+            <label htmlFor="report-details" className="block text-sm font-medium">
+              Details
+            </label>
+
+            <textarea
+              id="report-details"
+              name="details"
+              rows={5}
+              className="mt-2 w-full rounded-md border bg-background px-3 py-2"
+              placeholder="Add any context that may help moderators review this report."
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="rounded-md border px-4 py-2 text-sm font-medium"
+          >
+            Submit report
+          </button>
+        </form>
       </section>
     </main>
   );
