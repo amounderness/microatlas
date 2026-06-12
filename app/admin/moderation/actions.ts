@@ -39,3 +39,36 @@ export async function reviewNationSubmission(formData: FormData) {
 
   redirect(`/admin/moderation/${queueId}?reviewed=1`);
 }
+
+export async function reviewNationDeletionRequest(formData: FormData) {
+  const supabase = await createClient();
+
+  const requestId = cleanRequiredText(formData.get("request_id"));
+  const decision = cleanRequiredText(formData.get("decision"));
+  const notes = cleanRequiredText(formData.get("notes"));
+
+  if (!requestId) {
+    redirect("/admin/moderation");
+  }
+
+  const { error } = await supabase.rpc("review_nation_deletion_request", {
+    p_request_id: requestId,
+    p_decision: decision,
+    p_notes: notes || null,
+  });
+
+  if (error) {
+    redirect(
+      `/admin/moderation/deletions/${requestId}?error=${encodeURIComponent(
+        error.message
+      )}`
+    );
+  }
+
+  revalidatePath("/admin/moderation");
+  revalidatePath(`/admin/moderation/deletions/${requestId}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/nations");
+
+  redirect(`/admin/moderation/deletions/${requestId}?reviewed=1`);
+}

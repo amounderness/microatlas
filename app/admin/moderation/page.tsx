@@ -19,12 +19,31 @@ type NationSummary = {
   updated_at: string;
 };
 
+type DeletionRequestItem = {
+  id: string;
+  nation_id: string;
+  reason: string;
+  details: string | null;
+  status: string;
+  created_at: string;
+};
+
+type DeletionNationSummary = {
+  id: string;
+  name: string;
+  short_description: string;
+  status: string;
+  visibility: string;
+};
+
 export default function AdminModerationPage() {
   return (
     <Suspense
       fallback={
         <main className="mx-auto max-w-5xl p-8">
-          <h1 className="text-2xl font-semibold">Loading moderation queue...</h1>
+          <h1 className="text-2xl font-semibold">
+            Loading moderation queue...
+          </h1>
         </main>
       }
     >
@@ -92,7 +111,9 @@ async function ModerationQueue() {
     return (
       <main className="mx-auto max-w-5xl p-8">
         <h1 className="text-2xl font-semibold">Moderation Queue</h1>
-        <p className="mt-4 text-red-500">Submitted nations could not be loaded.</p>
+        <p className="mt-4 text-red-500">
+          Submitted nations could not be loaded.
+        </p>
         <pre className="mt-4 rounded border p-4 text-sm">
           {nationsError.message}
         </pre>
@@ -104,15 +125,50 @@ async function ModerationQueue() {
     ((nations || []) as NationSummary[]).map((nation) => [nation.id, nation])
   );
 
-  const pendingItems = typedQueueItems.filter((item) => item.status === "pending");
-  const historicItems = typedQueueItems.filter((item) => item.status !== "pending");
+  const pendingItems = typedQueueItems.filter(
+    (item) => item.status === "pending"
+  );
+
+  const historicItems = typedQueueItems.filter(
+    (item) => item.status !== "pending"
+  );
+
+  const { data: deletionRequests, error: deletionRequestsError } =
+    await supabase
+      .from("nation_deletion_requests")
+      .select("id, nation_id, reason, details, status, created_at")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+
+  const typedDeletionRequests =
+    (deletionRequests || []) as DeletionRequestItem[];
+
+  const deletionNationIds = typedDeletionRequests.map(
+    (request) => request.nation_id
+  );
+
+  const { data: deletionNations } =
+    deletionNationIds.length > 0
+      ? await supabase
+          .from("nations")
+          .select("id, name, short_description, status, visibility")
+          .in("id", deletionNationIds)
+      : { data: [] };
+
+  const deletionNationMap = new Map(
+    ((deletionNations || []) as DeletionNationSummary[]).map((nation) => [
+      nation.id,
+      nation,
+    ])
+  );
 
   return (
     <main className="mx-auto max-w-5xl p-8">
       <h1 className="text-3xl font-semibold">Moderation Queue</h1>
 
       <p className="mt-3 text-muted-foreground">
-        Review submitted nations before they appear on the public atlas.
+        Review submitted nations and deletion requests before they affect the
+        public atlas.
       </p>
 
       <section className="mt-8">
@@ -130,9 +186,11 @@ async function ModerationQueue() {
                       <h3 className="text-lg font-medium">
                         {nation?.name || "Unknown nation"}
                       </h3>
+
                       <p className="mt-2 text-sm text-muted-foreground">
                         {nation?.short_description || "No description"}
                       </p>
+
                       <p className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">
                         Queue status: {item.status}
                       </p>
@@ -157,6 +215,54 @@ async function ModerationQueue() {
       </section>
 
       <section className="mt-10">
+        <h2 className="text-xl font-medium">Pending deletion requests</h2>
+
+        <div className="mt-4 space-y-4">
+          {deletionRequestsError ? (
+            <div className="rounded-lg border border-red-500 p-5 text-sm text-red-500">
+              Deletion requests could not be loaded:{" "}
+              {deletionRequestsError.message}
+            </div>
+          ) : typedDeletionRequests.length > 0 ? (
+            typedDeletionRequests.map((request) => {
+              const nation = deletionNationMap.get(request.nation_id);
+
+              return (
+                <article key={request.id} className="rounded-lg border p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-medium">
+                        {nation?.name || "Unknown nation"}
+                      </h3>
+
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Reason: {request.reason.replaceAll("_", " ")}
+                      </p>
+
+                      <p className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">
+                        Request status: {request.status}
+                      </p>
+                    </div>
+
+                    <Link
+                      href={`/admin/moderation/deletions/${request.id}`}
+                      className="rounded-md border px-4 py-2 text-sm font-medium"
+                    >
+                      Review deletion
+                    </Link>
+                  </div>
+                </article>
+              );
+            })
+          ) : (
+            <div className="rounded-lg border p-5 text-sm text-muted-foreground">
+              No pending deletion requests.
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="mt-10">
         <h2 className="text-xl font-medium">Recent reviewed items</h2>
 
         <div className="mt-4 space-y-4">
@@ -165,12 +271,16 @@ async function ModerationQueue() {
               const nation = nationMap.get(item.target_id);
 
               return (
-                <article key={item.id} className="rounded-lg border p-5 opacity-80">
+                <article
+                  key={item.id}
+                  className="rounded-lg border p-5 opacity-80"
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <h3 className="text-lg font-medium">
                         {nation?.name || "Unknown nation"}
                       </h3>
+
                       <p className="mt-2 text-sm text-muted-foreground">
                         Queue status: {item.status}
                       </p>
