@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { Suspense } from "react";
 import { ThemeProvider } from "next-themes";
+
+import { SiteNav } from "@/components/site-nav";
+
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
@@ -21,6 +25,16 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+function SiteNavFallback() {
+  return (
+    <header className="border-b">
+      <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-8 py-4">
+        <span className="font-semibold">MicroAtlas</span>
+      </nav>
+    </header>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,6 +49,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Suspense fallback={<SiteNavFallback />}>
+            <SiteNav />
+          </Suspense>
+
           {children}
         </ThemeProvider>
       </body>

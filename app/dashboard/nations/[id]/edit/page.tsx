@@ -5,6 +5,16 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { submitNationForReview, updateDraftNation } from "../../actions";
 
+type ReviewTimelineEvent = {
+  event_type: string;
+  action: string;
+  notes: string | null;
+  created_at: string;
+  actor_display_name: string | null;
+  actor_username: string | null;
+  actor_role: string | null;
+};
+
 type EditNationPageProps = {
   params: Promise<{
     id: string;
@@ -79,30 +89,71 @@ async function EditNationForm({ params, searchParams }: EditNationPageProps) {
     );
   }
 
-const [{ data: claim }, { data: flagAsset }, { data: queueEntry }] =
-  await Promise.all([
-    supabase
-      .from("nation_claims")
-      .select("id")
-      .eq("nation_id", nation.id)
-      .maybeSingle(),
+const [
+  { data: claim },
+  { data: flagAsset },
+  { data: queueEntry },
+  { data: reviewTimeline, error: reviewTimelineError },
+] = await Promise.all([
+  supabase
+    .from("nation_claims")
+    .select("id")
+    .eq("nation_id", nation.id)
+    .maybeSingle(),
 
-    supabase
-      .from("nation_assets")
-      .select("id, status")
-      .eq("nation_id", nation.id)
-      .eq("asset_type", "flag")
-      .maybeSingle(),
+  supabase
+    .from("nation_assets")
+    .select("id, status")
+    .eq("nation_id", nation.id)
+    .eq("asset_type", "flag")
+    .maybeSingle(),
 
-    supabase
-      .from("moderation_queue")
-      .select("id, status, created_at")
-      .eq("target_type", "nation")
-      .eq("target_id", nation.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
+  supabase
+    .from("moderation_queue")
+    .select("id, status, moderator_notes, created_at, reviewed_at")
+    .eq("target_type", "nation")
+    .eq("target_id", nation.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle(),
+
+  supabase.rpc("get_nation_review_timeline", {
+    p_nation_id: nation.id,
+  }),
+]);
+
+const typedReviewTimeline =
+  (reviewTimeline || []) as ReviewTimelineEvent[];
+
+const latestTimelineNote =
+  typedReviewTimeline
+    .filter(
+      (event: ReviewTimelineEvent) =>
+        event.notes && event.notes.trim().length > 0
+    )
+    .at(-1) || null;
+
+const latestQueueNote =
+  queueEntry?.moderator_notes && queueEntry.moderator_notes.trim().length > 0
+    ? {
+        event_type: "moderation_queue",
+        action: queueEntry.status,
+        notes: queueEntry.moderator_notes,
+        created_at: queueEntry.reviewed_at || queueEntry.created_at,
+        actor_display_name: null,
+        actor_username: null,
+        actor_role: "Moderator",
+      }
+    : null;
+
+const latestModeratorNote = latestTimelineNote || latestQueueNote;
+
+const visibleReviewTimeline =
+  typedReviewTimeline.length > 0
+    ? typedReviewTimeline
+    : latestQueueNote
+      ? [latestQueueNote]
+      : [];
 
 const detailsComplete =
   nation.name.trim().length >= 2 &&
@@ -116,6 +167,11 @@ const isEditable =
 
 const readyToSubmit =
   isEditable && detailsComplete && claimComplete && flagComplete;
+
+const isUnderReview = nation.status === "submitted";
+const needsChanges = nation.status === "needs_changes";
+const isApproved = nation.status === "approved";
+const isRejected = nation.status === "rejected";
 
   return (
     <main className="mx-auto max-w-3xl p-8">
@@ -142,9 +198,9 @@ const readyToSubmit =
         </div>
       ) : null}
 
-      {query?.submitted ? (
+      {query?.submitted && nation.status === "submitted" ? (
         <div className="mt-6 rounded-md border p-4 text-sm">
-            Nation submitted for review.
+         Nation submitted for review.
         </div>
       ) : null}
 
@@ -185,10 +241,31 @@ const readyToSubmit =
          ) : null}
          </div>
 
-         {!isEditable ? (
+         {isUnderReview ? (
             <div className="mt-6 rounded-md border p-4 text-sm">
-                This nation is not currently editable. Editing is only available while it is
-                a draft or when a moderator has requested changes.
+              This nation has been submitted for review. Editing is locked while a
+               moderator reviews the submission.
+             </div>
+            ) : null}
+
+            {needsChanges ? (
+             <div className="mt-6 rounded-md border p-4 text-sm">
+              A moderator has requested changes. Editing is currently unlocked. Make the
+              required updates, then resubmit the nation for review.
+            </div>
+            ) : null}
+
+            {isApproved ? (
+             <div className="mt-6 rounded-md border p-4 text-sm">
+               This nation has been approved and is no longer editable from the draft
+              workflow.
+             </div>
+            ) : null}
+
+            {isRejected ? (
+            <div className="mt-6 rounded-md border p-4 text-sm">
+             This nation has been rejected and is no longer editable from the draft
+             workflow.
             </div>
          ) : null}
 
@@ -356,6 +433,76 @@ const readyToSubmit =
           </div>
         </div>
 
+        {reviewTimelineError ? (
+         <section className="mt-8 rounded-lg border border-red-500 p-6 text-sm text-red-500">
+          <h2 className="text-xl font-medium">Review timeline could not be loaded</h2>
+          <p className="mt-3">{reviewTimelineError.message}</p>
+         </section>
+        ) : null}
+
+        {latestModeratorNote ? (
+            <section className="mt-8 rounded-lg border p-6">
+             <h2 className="text-xl font-medium">Latest moderator note</h2>
+
+             <div className="mt-4 rounded-md border p-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                   <p className="font-medium">
+                    {latestModeratorNote.actor_display_name ||
+                      latestModeratorNote.actor_username ||
+                      "Moderator"}
+                   </p>
+
+                   <p className="text-xs text-muted-foreground">
+                     {new Date(latestModeratorNote.created_at).toLocaleString("en-GB")}
+                   </p>
+                  </div>
+
+                <p className="mt-3 whitespace-pre-wrap text-muted-foreground">
+                 {latestModeratorNote.notes}
+                </p>
+             </div>
+            </section>
+        ) : null}
+
+        {visibleReviewTimeline.length > 0 ? (
+            <section className="mt-8 rounded-lg border p-6">
+            <h2 className="text-xl font-medium">Review timeline</h2>
+
+            <ol className="mt-5 space-y-4">
+             {visibleReviewTimeline.map((event: ReviewTimelineEvent, index: number) => (
+              <li
+                key={`${event.action}-${event.created_at}-${index}`}
+                className="border-l pl-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="font-medium">
+                     {event.action.replaceAll("_", " ")}
+                    </p>
+
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(event.created_at).toLocaleString("en-GB")}
+                    </p>
+                </div>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  By{" "}
+                  {event.actor_display_name ||
+                    event.actor_username ||
+                    event.actor_role ||
+                   "System"}
+                 </p>
+
+                {event.notes ? (
+                 <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                      {event.notes}
+                 </p>
+                ) : null}
+               </li>
+               ))}
+             </ol>
+            </section>
+        ) : null}
+
         <input type="hidden" name="visibility" value="private" />
 
         <label className="flex items-center gap-3 text-sm">
@@ -402,8 +549,8 @@ const readyToSubmit =
             </>
         ) : (
             <p className="text-sm text-muted-foreground">
-               Editing controls are locked unless this nation is a draft or has been returned
-               for changes.
+               Editing controls are locked while this nation is under review, approved, or
+               rejected. They reopen only when a moderator requests changes.
             </p>
         )}
         </div>
