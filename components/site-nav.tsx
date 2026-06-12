@@ -68,6 +68,8 @@ export function SiteNav() {
         </Link>
 
         <div className="flex flex-wrap items-center gap-4 text-sm">
+          <Link href="/atlas">Atlas</Link>
+          
           {isLoggedIn ? (
             <>
               <Link href="/dashboard">Dashboard</Link>
