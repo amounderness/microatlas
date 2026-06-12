@@ -8,6 +8,8 @@ import { createClient } from "@/lib/supabase/server";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
+const FLAG_BUCKET = "nation-flags";
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -219,4 +221,151 @@ export async function submitNationForReview(formData: FormData) {
   revalidatePath(`/dashboard/nations/${nationId}/flag`);
 
   redirect(`/dashboard/nations/${nationId}/edit?submitted=1`);
+}
+
+export async function deleteOwnNation(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    redirect("/auth/login");
+  }
+
+  const nationId = cleanRequiredText(formData.get("nation_id"));
+  const confirmDelete = formData.get("confirm_delete") === "yes";
+
+  if (!nationId) {
+    redirect("/dashboard/nations");
+  }
+
+  if (!confirmDelete) {
+    redirect(
+      `/dashboard/nations/${nationId}/edit?error=${encodeURIComponent(
+        "You must confirm deletion before deleting this nation."
+      )}`
+    );
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (profileError || !profile) {
+    redirect(
+      `/dashboard/nations/${nationId}/edit?error=${encodeURIComponent(
+        "Profile could not be loaded."
+      )}`
+    );
+  }
+
+  const { data: nation, error: nationError } = await supabase
+    .from("nations")
+    .select("id, owner_id, status")
+    .eq("id", nationId)
+    .eq("owner_id", profile.id)
+    .single();
+
+  if (nationError || !nation) {
+    redirect(
+      `/dashboard/nations/${nationId}/edit?error=${encodeURIComponent(
+        "Nation could not be found."
+      )}`
+    );
+  }
+
+  if (!["draft", "needs_changes", "rejected"].includes(nation.status)) {
+    redirect(
+      `/dashboard/nations/${nationId}/edit?error=${encodeURIComponent(
+        "Only draft, needs-changes, or rejected nations can be deleted directly."
+      )}`
+    );
+  }
+
+  const { data: assets } = await supabase
+    .from("nation_assets")
+    .select("storage_path")
+    .eq("nation_id", nationId);
+
+  const storagePaths =
+    assets?.map((asset) => asset.storage_path).filter(Boolean) || [];
+
+  if (storagePaths.length > 0) {
+    const { error: storageError } = await supabase.storage
+      .from(FLAG_BUCKET)
+      .remove(storagePaths);
+
+    if (storageError) {
+      redirect(
+        `/dashboard/nations/${nationId}/edit?error=${encodeURIComponent(
+          storageError.message
+        )}`
+      );
+    }
+  }
+
+  const { error: deleteError } = await supabase
+    .from("nations")
+    .delete()
+    .eq("id", nationId)
+    .eq("owner_id", profile.id);
+
+  if (deleteError) {
+    redirect(
+      `/dashboard/nations/${nationId}/edit?error=${encodeURIComponent(
+        deleteError.message
+      )}`
+    );
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/nations");
+
+  redirect("/dashboard/nations?deleted=1");
+}
+
+export async function requestNationDeletion(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    redirect("/auth/login");
+  }
+
+  const nationId = cleanRequiredText(formData.get("nation_id"));
+  const reason = cleanRequiredText(formData.get("reason"));
+  const details = cleanRequiredText(formData.get("details"));
+
+  if (!nationId) {
+    redirect("/dashboard/nations");
+  }
+
+  const { error } = await supabase.rpc("request_nation_deletion", {
+    p_nation_id: nationId,
+    p_reason: reason,
+    p_details: details || null,
+  });
+
+  if (error) {
+    redirect(
+      `/dashboard/nations/${nationId}/edit?error=${encodeURIComponent(
+        error.message
+      )}`
+    );
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/nations");
+  revalidatePath(`/dashboard/nations/${nationId}/edit`);
+
+  redirect(`/dashboard/nations/${nationId}/edit?deletion_requested=1`);
 }

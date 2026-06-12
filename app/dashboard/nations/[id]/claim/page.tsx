@@ -80,7 +80,7 @@ async function NationClaimContent({ params, searchParams }: ClaimPageProps) {
     );
   }
 
-  if (nation.status !== "draft") {
+  if (!["draft", "needs_changes"].includes(nation.status)) {
     return (
       <main className="mx-auto max-w-5xl p-8">
         <Link
@@ -92,7 +92,7 @@ async function NationClaimContent({ params, searchParams }: ClaimPageProps) {
 
         <h1 className="mt-4 text-2xl font-semibold">Claim locked</h1>
         <p className="mt-3 text-muted-foreground">
-          Only draft nations can have their map claim edited.
+          Only draft or needs-changes nations can have their map claim edited.
         </p>
       </main>
     );
