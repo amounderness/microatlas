@@ -3,6 +3,9 @@ import Link from "next/link";
 
 import { createDraftNation } from "../actions";
 
+import AccountRestrictedNotice from "@/components/account-restricted-notice";
+import { getCurrentProfile } from "@/lib/auth/profile";
+
 type NewNationPageProps = {
   searchParams?: Promise<{
     error?: string;
@@ -25,6 +28,15 @@ export default function NewNationPage(props: NewNationPageProps) {
 
 async function NewNationForm({ searchParams }: NewNationPageProps) {
   const params = await searchParams;
+  const { profile: currentProfile } = await getCurrentProfile();
+
+  if (currentProfile?.is_banned) {
+    return (
+      <main className="mx-auto max-w-4xl p-8">
+        <AccountRestrictedNotice />
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-3xl p-8">

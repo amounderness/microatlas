@@ -8,6 +8,8 @@ import { createClient } from "@/lib/supabase/server";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
+import { requireActiveProfile } from "@/lib/auth/profile";
+
 const FLAG_BUCKET = "nation-flags";
 
 function slugify(value: string) {
@@ -71,6 +73,8 @@ async function getCurrentProfile(supabase: SupabaseServerClient) {
 }
 
 export async function createDraftNation(formData: FormData) {
+  await requireActiveProfile();
+
   const supabase = await createClient();
   const profile = await getCurrentProfile(supabase);
 
@@ -123,6 +127,8 @@ export async function createDraftNation(formData: FormData) {
 }
 
 export async function updateDraftNation(formData: FormData) {
+  await requireActiveProfile();
+  
   const supabase = await createClient();
   const profile = await getCurrentProfile(supabase);
 
@@ -185,6 +191,8 @@ export async function updateDraftNation(formData: FormData) {
 }
 
 export async function submitNationForReview(formData: FormData) {
+  await requireActiveProfile();
+
   const supabase = await createClient();
 
   const {
@@ -224,6 +232,8 @@ export async function submitNationForReview(formData: FormData) {
 }
 
 export async function deleteOwnNation(formData: FormData) {
+  await requireActiveProfile();
+
   const supabase = await createClient();
 
   const {
@@ -330,6 +340,8 @@ export async function deleteOwnNation(formData: FormData) {
 }
 
 export async function requestNationDeletion(formData: FormData) {
+  await requireActiveProfile();
+
   const supabase = await createClient();
 
   const {

@@ -6,6 +6,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { deleteNationFlag, uploadNationFlag } from "./actions";
 
+import AccountRestrictedNotice from "@/components/account-restricted-notice";
+import { getCurrentProfile } from "@/lib/auth/profile";
+
 const FLAG_BUCKET = "nation-flags";
 
 type FlagPageProps = {
@@ -64,6 +67,16 @@ async function NationFlagContent({ params, searchParams }: FlagPageProps) {
     .eq("id", id)
     .eq("owner_id", profile.id)
     .single();
+
+  const { profile: currentProfile } = await getCurrentProfile();
+
+  if (currentProfile?.is_banned) {
+    return (
+      <main className="mx-auto max-w-4xl p-8">
+        <AccountRestrictedNotice />
+      </main>
+    );
+  }
 
   if (nationError || !nation) {
     return (
