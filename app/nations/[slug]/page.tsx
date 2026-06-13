@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import NationClaimPreviewWrapper from "@/components/map/nation-claim-preview-wrapper";
 import { submitNationReport } from "./actions";
 
+import NationReportForm from "@/components/nation-report-form";
+
 const FLAG_BUCKET = "nation-flags";
 
 type NationProfilePageProps = {
@@ -236,77 +238,7 @@ async function NationProfile({ params, searchParams }: NationProfilePageProps) {
           concerns, impersonation, suspicious links, or other serious issues.
         </p>
 
-        <form action={submitNationReport} className="mt-5 space-y-5">
-          <input type="hidden" name="target_id" value={nation.id} />
-          <input type="hidden" name="slug" value={nation.slug} />
-          <input
-            type="text"
-            name="website"
-            tabIndex={-1}
-            autoComplete="off"
-            className="hidden"
-            aria-hidden="true"
-          />
-
-          <input type="hidden" name="loaded_at" value={Date.now()} />
-
-          <div>
-            <label htmlFor="report-reason" className="block text-sm font-medium">
-              Reason
-            </label>
-
-            <select
-              id="report-reason"
-              name="reason"
-              required
-              className="mt-2 w-full rounded-md border bg-background px-3 py-2"
-            >
-              <option value="">Select a reason</option>
-              <option value="spam">Spam</option>
-              <option value="abuse_or_harassment">Abuse or harassment</option>
-              <option value="privacy_or_personal_information">
-                Privacy or personal information
-              </option>
-              <option value="extremist_or_hateful_content">
-                Extremist or hateful content
-              </option>
-              <option value="impersonation">Impersonation</option>
-              <option value="pornographic_or_shock_content">
-                Pornographic or shock content
-              </option>
-              <option value="malware_or_suspicious_link">
-                Malware or suspicious link
-              </option>
-              <option value="disruptive_or_excessive_claim">
-                Disruptive or excessive claim
-              </option>
-              <option value="low_effort_or_nonsense">
-                Low-effort or nonsense entry
-              </option>
-              <option value="other">Other</option>
-            </select>
-          </div>   
-          <div>
-            <label htmlFor="report-details" className="block text-sm font-medium">
-              Details
-            </label>
-
-            <textarea
-              id="report-details"
-              name="details"
-              rows={5}
-              className="mt-2 w-full rounded-md border bg-background px-3 py-2"
-              placeholder="Add any context that may help moderators review this report."
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="rounded-md border px-4 py-2 text-sm font-medium"
-          >
-            Submit report
-          </button>
-        </form>
+        <NationReportForm nationId={nation.id} slug={nation.slug} />
       </section>
     </main>
   );
