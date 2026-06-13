@@ -1,3 +1,5 @@
+import { signOut } from "@/app/auth/actions";
+
 export default function AccountRestrictedNotice() {
   return (
     <section className="rounded-lg border border-red-500 p-6">
@@ -14,6 +16,16 @@ export default function AccountRestrictedNotice() {
       <p className="mt-3 text-sm text-muted-foreground">
         If this appears to be an error, contact the site administrator.
       </p>
+
+      <form action={signOut} className="mt-5">
+        <button
+          type="submit"
+          className="rounded-md border px-4 py-2 text-sm font-medium"
+        >
+          Sign out
+        </button>
+      </form>
+
     </section>
   );
 }

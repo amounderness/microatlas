@@ -17,6 +17,7 @@ export async function submitNationReport(formData: FormData) {
   const website = cleanRequiredText(formData.get("website"));
   const loadedAt = Number(cleanRequiredText(formData.get("loaded_at")));
   const ageMs = Date.now() - loadedAt;
+  
 
 if (website || !Number.isFinite(loadedAt) || ageMs < 3000 || ageMs > 86400000) {
   redirect(`/nations/${slug}?reported=1`);
