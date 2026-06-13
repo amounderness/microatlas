@@ -42,6 +42,15 @@ MicroAtlas is preparing for closed beta.
 
 The current visual design is temporary. A fuller visual identity and interface redesign is expected after the MVP is functionally stable.
 
+
+| **Category**      | **Info**                           |
+|--------------|------------------------------------|
+| MicroAtlas   | MVP v1.0                           |
+| Status       | Closed Beta Ready                  |
+| Branch State | main is canonical                  |
+| Next Work    | Beta testing and issue-fixing only |
+
+
 ## Development
 
 Install dependencies:
