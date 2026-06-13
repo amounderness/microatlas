@@ -10,11 +10,17 @@ function cleanRequiredText(value: FormDataEntryValue | null) {
 
 export async function submitNationReport(formData: FormData) {
   const supabase = await createClient();
-
   const targetId = cleanRequiredText(formData.get("target_id"));
   const slug = cleanRequiredText(formData.get("slug"));
   const reason = cleanRequiredText(formData.get("reason"));
   const details = cleanRequiredText(formData.get("details"));
+  const website = cleanRequiredText(formData.get("website"));
+  const loadedAt = Number(cleanRequiredText(formData.get("loaded_at")));
+  const ageMs = Date.now() - loadedAt;
+
+if (website || !Number.isFinite(loadedAt) || ageMs < 3000 || ageMs > 86400000) {
+  redirect(`/nations/${slug}?reported=1`);
+}
 
   if (!targetId || !slug) {
     redirect("/atlas");

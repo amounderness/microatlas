@@ -239,6 +239,16 @@ async function NationProfile({ params, searchParams }: NationProfilePageProps) {
         <form action={submitNationReport} className="mt-5 space-y-5">
           <input type="hidden" name="target_id" value={nation.id} />
           <input type="hidden" name="slug" value={nation.slug} />
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            className="hidden"
+            aria-hidden="true"
+          />
+
+          <input type="hidden" name="loaded_at" value={Date.now()} />
 
           <div>
             <label htmlFor="report-reason" className="block text-sm font-medium">
