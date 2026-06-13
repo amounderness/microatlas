@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 
 import AccountRestrictedNotice from "@/components/account-restricted-notice";
 
+import { signOut } from "@/app/auth/actions";
+
 export default function DashboardPage() {
   return (
     <Suspense
@@ -110,6 +112,18 @@ async function DashboardContent() {
         >
           Edit profile
         </Link>
+
+        <div>
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="rounded-md border px-4 py-2 text-sm font-medium"
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
+        
       </section>
 
       <section className="mt-6 rounded-lg border p-6">
