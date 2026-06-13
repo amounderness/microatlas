@@ -1,58 +1,73 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
-import { Suspense } from "react";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Next.js Supabase Starter</Link>
-              <div className="flex items-center gap-2">
-                <DeployButton />
-              </div>
-            </div>
-            {!hasEnvVars ? (
-              <EnvVarWarning />
-            ) : (
-              <Suspense>
-                <AuthButton />
-              </Suspense>
-            )}
-          </div>
-        </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-          </main>
-        </div>
+    <main className="mx-auto max-w-6xl px-6 py-16">
+      <section className="max-w-3xl">
+        <p className="text-sm uppercase tracking-wide text-muted-foreground">
+          MicroAtlas
+        </p>
 
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-              target="_blank"
-              className="font-bold hover:underline"
-              rel="noreferrer"
-            >
-              Supabase
-            </a>
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
+          A public atlas for micronations and self-declared civic projects.
+        </h1>
+
+        <p className="mt-6 text-lg text-muted-foreground">
+          MicroAtlas is a moderated public registry for micronations,
+          self-declared states, experimental civic projects, and related
+          territorial claims. Entries are submitted by verified users and
+          reviewed before publication.
+        </p>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link
+            href="/atlas"
+            className="rounded-md border px-5 py-3 text-sm font-medium"
+          >
+            Browse the atlas
+          </Link>
+
+          <Link
+            href="/auth/login"
+            className="rounded-md border px-5 py-3 text-sm font-medium"
+          >
+            Sign in
+          </Link>
+
+          <Link
+            href="/auth/sign-up"
+            className="rounded-md border px-5 py-3 text-sm font-medium"
+          >
+            Create account
+          </Link>
+        </div>
+      </section>
+
+      <section className="mt-16 grid gap-6 md:grid-cols-3">
+        <article className="rounded-lg border p-6">
+          <h2 className="text-lg font-medium">Moderated registry</h2>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Public entries are reviewed before publication. Drafts,
+            rejected entries, and hidden entries remain non-public.
           </p>
-          <ThemeSwitcher />
-        </footer>
-      </div>
+        </article>
+
+        <article className="rounded-lg border p-6">
+          <h2 className="text-lg font-medium">Mapped claims</h2>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Approved entries can appear on a public map with basic profile
+            information, a flag, and a self-declared claim boundary.
+          </p>
+        </article>
+
+        <article className="rounded-lg border p-6">
+          <h2 className="text-lg font-medium">Closed beta notice</h2>
+          <p className="mt-3 text-sm text-muted-foreground">
+            MicroAtlas is in MVP development. Functionality and presentation
+            may change during testing.
+          </p>
+        </article>
+      </section>
     </main>
   );
 }
