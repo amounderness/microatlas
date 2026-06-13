@@ -2,12 +2,13 @@
 
 ## 1. Build and deployment readiness
 
-- [~] `npm run build` passes locally.
-- [~] Production deployment builds successfully.
+- [x] `npm run build` passes locally.
+- [x] Production deployment builds successfully.
 - [x] `.env.local` is not committed.
 - [x] Supabase project URL and publishable key are configured in deployment environment.
-- [~] No starter-kit metadata remains visible.
-- [~] Public pages have sensible titles/descriptions.
+- [x] No starter-kit metadata remains visible.
+- [x] Public pages have sensible titles/descriptions.
+- [x] README.md published with basic description and MVP notice.
 
 ## 2. Authentication and account safety
 
@@ -16,7 +17,7 @@
 - [x] Users can verify email.
 - [x] Users can log in and log out.
 - [x] Unverified users cannot submit nations.
-- [~] Banned users cannot create, edit, submit, or report.
+- [x] Banned users cannot create, edit, submit, or report.
 
 ## 3. Privacy and access control
 
@@ -27,7 +28,7 @@
 - [x] Users cannot view another user's private draft.
 - [x] Users cannot edit another user's nation.
 - [x] User emails are hidden by default.
-- [~] Public email appears only when explicitly enabled.
+- [x] Public email appears only when explicitly enabled.
 
 ## 4. Moderation workflow
 
@@ -52,7 +53,7 @@
 - [x] Admin can mark report as reviewing.
 - [x] Admin can resolve report.
 - [x] Admin can dismiss report.
-- [ ] Basic bot/honeypot protection exists on public report form.
+- [x] Basic bot/honeypot protection exists on public report form.
 
 ## 6. Bad submission tests
 
@@ -68,6 +69,23 @@
 
 - [x] At least 10 test submissions reviewed end-to-end.
 - [x] At least 3 intentionally bad/spam submissions tested.
-- [ ] Feedback collection method prepared.
-- [ ] Known issues list prepared.
-- [ ] Closed beta invite list prepared.
+- [x] Feedback collection method prepared.
+- [x] Known issues list prepared.
+- [x] Closed beta invite list prepared.
+
+## TO DO
+
+1. Replace starter homepage and metadata.
+    Done? [x] (Notes: )
+2. Add report honeypot/minimum-time protection.
+    Done? [x] (Notes: )
+3. Test banned logged-in user report submission.
+    Done? [x] (Notes: )
+4. Test public email visibility.
+    Done? [x] (Notes: )
+5. Create beta feedback / known issues / invite list docs.
+    Done? [x] (Notes: )
+6. Final build + production deployment verification.
+    Done? [x] (Notes: )
+7. README.md published.
+    Done? [x] (Notes: )

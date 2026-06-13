@@ -1,109 +1,109 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# MicroAtlas
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+MicroAtlas is a public atlas and registry for micronations, self-declared states, experimental civic projects, and related territorial claims.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+The project is currently in MVP development and preparing for closed beta.
 
-## Features
+## MVP scope
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+The MVP supports:
 
-## Demo
+- User sign-up and profile creation
+- Verified user nation submissions
+- Draft nation creation and editing
+- Map claim drawing
+- Flag upload
+- Submission for admin review
+- Admin approval, rejection, and change requests
+- Public atlas for approved entries
+- Public nation profile pages
+- Public reporting
+- Admin report review
+- Hide and restore moderation actions
+- User ban and unban actions
+- Basic account restriction handling
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+## Out of scope for MVP
 
-## Deploy to Vercel
+The MVP does not include:
 
-Vercel deployment will guide you through creating a Supabase account and project.
+- Chat or direct messaging
+- Alliances or diplomacy mechanics
+- Recognition systems
+- Rankings or leaderboards
+- War, conflict, or combat mechanics
+- Payments
+- Mobile app
+- Advanced visual redesign
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+## Current status
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+MicroAtlas is preparing for closed beta.
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+The current visual design is temporary. A fuller visual identity and interface redesign is expected after the MVP is functionally stable.
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+## Development
 
-## Clone and run locally
+Install dependencies:
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+```bash
+npm install
+```
 
-2. Create a Next.js app using the Supabase Starter template npx command
+Run locally:
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+```bash
+npm run dev
+```
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+Build:
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+```bash
+npm run build
+```
 
-3. Use `cd` to change into the app's directory
+## Environment
 
-   ```bash
-   cd with-supabase-app
-   ```
+This project uses Next.js and Supabase.
 
-4. Rename `.env.example` to `.env.local` and update the following:
+Required environment variables are stored outside the repository.
 
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+Do not commit `.env.local`.
 
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+## Core stack
 
-5. You can now run the Next.js local development server:
+- Next.js
+- TypeScript
+- Supabase Auth
+- Supabase Postgres
+- Supabase Storage
+- Leaflet
+- Leaflet Draw
+- Tailwind CSS
 
-   ```bash
-   npm run dev
-   ```
+## Moderation model
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+MicroAtlas uses an admin-reviewed publication model.
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+Users can create and submit entries, but entries only appear publicly after approval. Draft, submitted, rejected, hidden, and private entries should not appear on the public atlas.
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+Admins and moderators can:
 
-## Feedback and issues
+- Review submitted nations
+- Approve entries
+- Reject entries
+- Request changes
+- Review reports
+- Hide approved entries
+- Restore hidden entries
+- Ban or unban users
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+## Closed beta notice
 
-## More Supabase examples
+During closed beta, data may be changed, removed, reset, or re-reviewed as the project is tested.
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+Closed beta users should not submit private addresses, sensitive personal information, illegal content, hateful content, pornographic content, malicious links, or intentionally abusive material unless specifically testing moderation workflows with permission.
+
+## License
+
+License not yet selected.
