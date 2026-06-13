@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import NationClaimEditorWrapper from "@/components/map/nation-claim-editor-wrapper";
 import { deleteNationClaim, saveNationClaim } from "./actions";
 
+import AccountRestrictedNotice from "@/components/account-restricted-notice";
+import { getCurrentProfile } from "@/lib/auth/profile";
+
 type ClaimPageProps = {
   params: Promise<{
     id: string;
@@ -64,6 +67,16 @@ async function NationClaimContent({ params, searchParams }: ClaimPageProps) {
     .eq("id", id)
     .eq("owner_id", profile.id)
     .single();
+
+  const { profile: currentProfile } = await getCurrentProfile();
+
+  if (currentProfile?.is_banned) {
+    return (
+      <main className="mx-auto max-w-4xl p-8">
+        <AccountRestrictedNotice />
+      </main>
+    );
+  }
 
   if (nationError || !nation) {
     return (

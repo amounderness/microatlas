@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
+import { requireActiveProfile } from "@/lib/auth/profile";
+
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
 type Coordinate = [number, number];
@@ -100,6 +102,7 @@ function validatePolygonFeature(raw: string) {
 }
 
 async function getCurrentProfile(supabase: SupabaseServerClient) {
+  await requireActiveProfile();
   const {
     data: { user },
     error: userError,
@@ -131,6 +134,7 @@ async function getEditableDraftNation(
   nationId: string,
   profileId: string
 ) {
+  await requireActiveProfile();
   const { data: nation, error } = await supabase
     .from("nations")
     .select("id, status")
@@ -150,6 +154,7 @@ async function getEditableDraftNation(
 }
 
 export async function saveNationClaim(formData: FormData) {
+  await requireActiveProfile();
   const supabase = await createClient();
   const profile = await getCurrentProfile(supabase);
 
@@ -205,6 +210,7 @@ export async function saveNationClaim(formData: FormData) {
 }
 
 export async function deleteNationClaim(formData: FormData) {
+  await requireActiveProfile();
   const supabase = await createClient();
   const profile = await getCurrentProfile(supabase);
 

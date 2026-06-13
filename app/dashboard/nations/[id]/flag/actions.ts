@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
+import { requireActiveProfile } from "@/lib/auth/profile";
+
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
 const FLAG_BUCKET = "nation-flags";
@@ -79,6 +81,7 @@ async function getEditableDraftNation(
 }
 
 export async function uploadNationFlag(formData: FormData) {
+  await requireActiveProfile();
   const supabase = await createClient();
   const { user, profile } = await getCurrentUserAndProfile(supabase);
 
@@ -212,6 +215,7 @@ export async function uploadNationFlag(formData: FormData) {
 }
 
 export async function deleteNationFlag(formData: FormData) {
+  await requireActiveProfile();
   const supabase = await createClient();
   const { profile } = await getCurrentUserAndProfile(supabase);
 

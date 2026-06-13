@@ -10,6 +10,9 @@ import {
   updateDraftNation,
 } from "../../actions";
 
+import AccountRestrictedNotice from "@/components/account-restricted-notice";
+import { getCurrentProfile } from "@/lib/auth/profile";
+
 type ReviewTimelineEvent = {
   event_type: string;
   action: string;
@@ -80,6 +83,16 @@ async function EditNationForm({ params, searchParams }: EditNationPageProps) {
     .eq("id", id)
     .eq("owner_id", profile.id)
     .single();
+
+  const { profile: currentProfile } = await getCurrentProfile();
+
+  if (currentProfile?.is_banned) {
+    return (
+      <main className="mx-auto max-w-4xl p-8">
+        <AccountRestrictedNotice />
+      </main>
+    );
+  }
 
   if (nationError || !nation) {
     return (

@@ -4,6 +4,9 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
+import AccountRestrictedNotice from "@/components/account-restricted-notice";
+import { getCurrentProfile } from "@/lib/auth/profile";
+
 export default function NationsPage() {
   return (
     <Suspense
@@ -20,6 +23,7 @@ export default function NationsPage() {
 
 async function NationsContent() {
   const supabase = await createClient();
+  const { profile: currentProfile } = await getCurrentProfile();
 
   const {
     data: { user },
@@ -70,6 +74,11 @@ async function NationsContent() {
           <Link href="/dashboard" className="text-sm text-muted-foreground">
             ← Back to dashboard
           </Link>
+          {currentProfile?.is_banned ? (
+            <div className="mb-6">
+              <AccountRestrictedNotice />
+            </div>
+          ) : null}
           <h1 className="mt-4 text-3xl font-semibold">My Nations</h1>
           <p className="mt-3 text-muted-foreground">
             Create and manage draft micronation entries before map claims and
@@ -77,12 +86,14 @@ async function NationsContent() {
           </p>
         </div>
 
-        <Link
-          href="/dashboard/nations/new"
-          className="rounded-md border px-4 py-2 text-sm font-medium"
-        >
-          Create nation
-        </Link>
+        {!currentProfile?.is_banned ? (
+          <Link
+            href="/dashboard/nations/new"
+            className="rounded-md border px-4 py-2 text-sm font-medium"
+          >
+            Create nation
+          </Link>
+        ) : null}
       </div>
 
       <section className="mt-8 space-y-4">

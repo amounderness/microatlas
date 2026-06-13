@@ -4,6 +4,8 @@ import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
 
+import AccountRestrictedNotice from "@/components/account-restricted-notice";
+
 export default function DashboardPage() {
   return (
     <Suspense
@@ -37,7 +39,7 @@ async function DashboardContent() {
     )
     .eq("user_id", user.id)
     .single();
-
+    
   if (profileError) {
     return (
       <main className="mx-auto max-w-3xl p-8">
@@ -52,12 +54,20 @@ async function DashboardContent() {
     );
   }
 
+  if (profile.is_banned) {
+    return (
+      <main className="mx-auto max-w-4xl p-8">
+        <AccountRestrictedNotice />
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto max-w-3xl p-8">
       <h1 className="text-3xl font-semibold">MicroAtlas Dashboard</h1>
 
       <p className="mt-3 text-muted-foreground">
-        Manage your profile and, later, your micronation submissions.
+        Manage your profile and your micronation submissions.
       </p>
 
       <section className="mt-8 rounded-lg border p-6">
