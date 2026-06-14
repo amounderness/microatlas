@@ -2,14 +2,54 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasEnvVars } from "../utils";
 
+function isPublicRoute(pathname: string) {
+  return (
+    pathname === "/" ||
+    pathname === "/atlas" ||
+    pathname.startsWith("/nations/") ||
+    pathname.startsWith("/auth/")
+  );
+}
+
+function isDashboardRoute(pathname: string) {
+  return pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+}
+
+function isAdminRoute(pathname: string) {
+  return pathname === "/admin" || pathname.startsWith("/admin/");
+}
+
 function isProtectedRoute(pathname: string) {
   return (
-    pathname === "/dashboard" ||
-    pathname.startsWith("/dashboard/") ||
-    pathname === "/admin" ||
-    pathname.startsWith("/admin/") ||
+    isDashboardRoute(pathname) ||
+    isAdminRoute(pathname) ||
     pathname === "/protected"
   );
+}
+
+function redirectWithCookies(
+  request: NextRequest,
+  supabaseResponse: NextResponse,
+  pathname: string,
+  searchParams?: Record<string, string>,
+) {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  url.search = "";
+
+  if (searchParams) {
+    for (const [key, value] of Object.entries(searchParams)) {
+      url.searchParams.set(key, value);
+    }
+  }
+
+  const redirectResponse = NextResponse.redirect(url);
+
+  supabaseResponse.cookies.getAll().forEach((cookie) => {
+    redirectResponse.cookies.set(cookie);
+  });
+
+  return redirectResponse;
 }
 
 export async function updateSession(request: NextRequest) {
@@ -17,14 +57,10 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  // If the env vars are not set, skip proxy check. You can remove this
-  // once you setup the project.
   if (!hasEnvVars) {
     return supabaseResponse;
   }
 
-  // With Fluid compute, don't put this client in a global environment
-  // variable. Always create a new one on each request.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -37,9 +73,11 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
+
           supabaseResponse = NextResponse.next({
             request,
           });
+
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
           );
@@ -48,36 +86,75 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  // IMPORTANT: If you remove getClaims() and you use server-side rendering
-  // with the Supabase client, your users may be randomly logged out.
+  /*
+   * Keep this immediately after createServerClient.
+   * Supabase recommends avoiding logic between client creation and auth lookup,
+   * otherwise session/cookie behaviour can become difficult to debug.
+   */
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
   const pathname = request.nextUrl.pathname;
 
-  if (!user && isProtectedRoute(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
-    url.searchParams.set("redirectedFrom", pathname);
-    return NextResponse.redirect(url);
+  /*
+   * Public routes do not require login.
+   *
+   * This includes:
+   * - /
+   * - /atlas
+   * - /nations/[slug]
+   * - /auth/login
+   * - /auth/sign-up
+   * - /auth/confirm
+   * - /auth/update-password
+   * - /auth/error
+   */
+  if (isPublicRoute(pathname)) {
+    return supabaseResponse;
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
+  /*
+   * Dashboard/admin/protected routes require login.
+   */
+  if (!user && isProtectedRoute(pathname)) {
+    return redirectWithCookies(request, supabaseResponse, "/auth/login", {
+      redirectedFrom: pathname,
+    });
+  }
+
+  /*
+   * If logged in, check the user's profile for bans and admin permissions.
+   *
+   * user.sub is the Supabase Auth user id.
+   */
+  if (user && isProtectedRoute(pathname)) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, is_banned")
+      .eq("user_id", user.sub)
+      .maybeSingle();
+
+    /*
+     * Banned users should not be able to use dashboard/admin areas.
+     * Send them to dashboard so your existing restricted-account notice
+     * can handle the user-facing explanation.
+     */
+    if (profile?.is_banned && pathname !== "/dashboard") {
+      return redirectWithCookies(request, supabaseResponse, "/dashboard");
+    }
+
+    /*
+     * Admin routes require moderator/admin role.
+     */
+    if (isAdminRoute(pathname)) {
+      const isStaff =
+        profile?.role === "admin" || profile?.role === "moderator";
+
+      if (!isStaff) {
+        return redirectWithCookies(request, supabaseResponse, "/dashboard");
+      }
+    }
+  }
 
   return supabaseResponse;
 }
