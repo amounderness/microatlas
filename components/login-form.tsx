@@ -16,6 +16,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+function getSafeRedirectPath(path: string | null): string {
+  if (!path) {
+    return "/dashboard";
+  }
+
+  // Only allow internal relative paths.
+  if (!path.startsWith("/") || path.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  // Never redirect back into auth pages or old starter-template route.
+  if (path.startsWith("/auth/") || path === "/protected") {
+    return "/dashboard";
+  }
+
+  return path;
+}
+
 export function LoginForm({
   className,
   ...props
@@ -28,7 +46,9 @@ export function LoginForm({
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const supabase = createClient();
+
     setIsLoading(true);
     setError(null);
 
@@ -37,9 +57,17 @@ export function LoginForm({
         email,
         password,
       });
-      if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+
+      if (error) {
+        throw error;
+      }
+
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectedFrom = searchParams.get("redirectedFrom");
+      const destination = getSafeRedirectPath(redirectedFrom);
+
+      router.push(destination);
+      router.refresh();
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -56,6 +84,7 @@ export function LoginForm({
             Enter your email below to login to your account
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
@@ -70,6 +99,7 @@ export function LoginForm({
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
@@ -80,6 +110,7 @@ export function LoginForm({
                     Forgot your password?
                   </Link>
                 </div>
+
                 <Input
                   id="password"
                   type="password"
@@ -88,11 +119,14 @@ export function LoginForm({
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+
               {error && <p className="text-sm text-red-500">{error}</p>}
+
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </div>
+
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link

@@ -20,11 +20,7 @@ function isAdminRoute(pathname: string) {
 }
 
 function isProtectedRoute(pathname: string) {
-  return (
-    isDashboardRoute(pathname) ||
-    isAdminRoute(pathname) ||
-    pathname === "/protected"
-  );
+  return isDashboardRoute(pathname) || isAdminRoute(pathname);
 }
 
 function redirectWithCookies(
@@ -34,6 +30,7 @@ function redirectWithCookies(
   searchParams?: Record<string, string>,
 ) {
   const url = request.nextUrl.clone();
+
   url.pathname = pathname;
   url.search = "";
 
@@ -88,8 +85,8 @@ export async function updateSession(request: NextRequest) {
 
   /*
    * Keep this immediately after createServerClient.
-   * Supabase recommends avoiding logic between client creation and auth lookup,
-   * otherwise session/cookie behaviour can become difficult to debug.
+   * Supabase session/cookie behaviour can become difficult to debug if
+   * unrelated logic is inserted before the auth lookup.
    */
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
@@ -97,24 +94,18 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   /*
-   * Public routes do not require login.
-   *
-   * This includes:
+   * Public routes do not require login:
    * - /
    * - /atlas
    * - /nations/[slug]
-   * - /auth/login
-   * - /auth/sign-up
-   * - /auth/confirm
-   * - /auth/update-password
-   * - /auth/error
+   * - /auth/*
    */
   if (isPublicRoute(pathname)) {
     return supabaseResponse;
   }
 
   /*
-   * Dashboard/admin/protected routes require login.
+   * Dashboard and admin routes require login.
    */
   if (!user && isProtectedRoute(pathname)) {
     return redirectWithCookies(request, supabaseResponse, "/auth/login", {
@@ -123,7 +114,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   /*
-   * If logged in, check the user's profile for bans and admin permissions.
+   * Logged-in users still need profile checks for bans and admin access.
    *
    * user.sub is the Supabase Auth user id.
    */
@@ -135,9 +126,9 @@ export async function updateSession(request: NextRequest) {
       .maybeSingle();
 
     /*
-     * Banned users should not be able to use dashboard/admin areas.
-     * Send them to dashboard so your existing restricted-account notice
-     * can handle the user-facing explanation.
+     * Banned users may reach /dashboard so the app can show the
+     * restricted-account notice, but they should not access deeper
+     * dashboard/admin routes.
      */
     if (profile?.is_banned && pathname !== "/dashboard") {
       return redirectWithCookies(request, supabaseResponse, "/dashboard");
