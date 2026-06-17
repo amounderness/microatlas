@@ -271,6 +271,12 @@ export default function Home() {
               </article>
             ))}
           </div>
+
+          <div className="mt-8">
+            <Button asChild variant="outline">
+              <Link href="/roadmap">View the roadmap</Link>
+            </Button>
+          </div>
         </div>
       </section>
 
