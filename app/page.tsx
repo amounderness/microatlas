@@ -113,16 +113,20 @@ export default function Home() {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg">
+              <Button asChild size="sm">
                 <Link href="/atlas">Browse the atlas</Link>
               </Button>
 
-              <Button asChild size="lg" variant="outline">
+              <Button asChild size="sm" variant="outline">
                 <Link href="/auth/sign-up">Request beta access</Link>
               </Button>
 
-              <Button asChild size="lg" variant="outline">
-                <Link href="/faq">Read the FAQ</Link>
+              <Button asChild size="sm" variant="outline">
+                <Link href="/faq">Read the FAQs</Link>
+              </Button>
+
+              <Button asChild size="sm" variant="outline">
+                <Link href="/roadmap">Explore the roadmap</Link>
               </Button>
             </div>
           </div>
@@ -274,6 +278,12 @@ export default function Home() {
                 </p>
               </article>
             ))}
+          </div>
+
+          <div className="mt-8">
+            <Button asChild variant="outline">
+              <Link href="/roadmap">View the roadmap</Link>
+            </Button>
           </div>
         </div>
       </section>
