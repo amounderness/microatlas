@@ -61,14 +61,14 @@ const laterItems = [
 ];
 
 const notPlannedItems = [
-  "Chat",
+  "Public Chat",
   "Direct messages",
-  "Wars/conflicts",
-  "Rankings",
+  "Wars or conflicts",
+  "Public Rankings",
   "Leaderboards",
   "Recognition mechanics",
-  "Alliances",
-  "Comments",
+  "Internal Alliance Systems",
+  "Public Comments",
 ];
 
 export const metadata: Metadata = {
@@ -112,6 +112,9 @@ export default function RoadmapPage() {
               submissions, mapped claims, public profiles, review, reporting,
               and core discovery.
             </p>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Last updated: June 2026. This roadmap may change as beta feedback reveals real product needs.
+            </p>
           </aside>
         </div>
       </section>
@@ -119,7 +122,7 @@ export default function RoadmapPage() {
       <section className="mx-auto max-w-6xl px-6 py-14">
         <div className="max-w-3xl">
           <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            Current MVP
+            Now: MVP v1.0
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight">
             The beta proves the registry model first.
@@ -147,7 +150,7 @@ export default function RoadmapPage() {
         <div className="mx-auto max-w-6xl px-6 py-14">
           <div className="max-w-3xl">
             <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              Near-term improvements
+              Next: Near-term improvements
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight">
               Improvements after the first beta feedback.
@@ -178,7 +181,7 @@ export default function RoadmapPage() {
       <section className="mx-auto grid max-w-6xl gap-8 px-6 py-14 md:grid-cols-[0.8fr_1.2fr]">
         <div>
           <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            Later possibilities
+            Later: Possible future features
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight">
             Possible only after the foundation is stable.
@@ -244,6 +247,10 @@ export default function RoadmapPage() {
             MicroAtlas should become a reliable public record before it becomes
             anything more complex. The roadmap may change as beta testers find
             real friction in the product.
+          </p>
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">
+            Items listed as later possibilities are not promises. They are directions
+            under consideration once the core atlas, moderation, and privacy model are stable.
           </p>
         </article>
 
