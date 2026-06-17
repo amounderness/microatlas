@@ -174,7 +174,7 @@ async function NationClaimContent({ params, searchParams }: ClaimPageProps) {
             id="area_label"
             name="area_label"
             defaultValue={claim?.area_label || ""}
-            placeholder="e.g. Cottam, Preston, Lancashire"
+            placeholder="e.g. 10 Downing Street, London"
             className="mt-2 w-full rounded-md border bg-background px-3 py-2"
           />
           <p className="mt-1 text-xs text-muted-foreground">

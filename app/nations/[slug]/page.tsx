@@ -5,11 +5,10 @@ import { notFound } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import NationClaimPreviewWrapper from "@/components/map/nation-claim-preview-wrapper";
-import { submitNationReport } from "./actions";
-
 import NationReportForm from "@/components/nation-report-form";
 
 const FLAG_BUCKET = "nation-flags";
+const SIGNED_FLAG_URL_SECONDS = 60 * 60;
 
 type NationProfilePageProps = {
   params: Promise<{
@@ -26,7 +25,9 @@ export default function NationProfilePage(props: NationProfilePageProps) {
     <Suspense
       fallback={
         <main className="mx-auto max-w-5xl p-8">
-          <h1 className="text-2xl font-semibold">Loading nation profile...</h1>
+          <h1 className="font-brand text-2xl font-semibold">
+            Loading nation profile...
+          </h1>
         </main>
       }
     >
@@ -54,60 +55,74 @@ async function NationProfile({ params, searchParams }: NationProfilePageProps) {
     notFound();
   }
 
-  const [{ data: claim }, { data: flagAsset }, { data: owner }] =
-    await Promise.all([
-      supabase
-        .from("nation_claims")
-        .select("geojson, claim_type, area_label")
-        .eq("nation_id", nation.id)
-        .maybeSingle(),
+  const claimQuery = supabase
+    .from("nation_claims")
+    .select("geojson, claim_type, area_label")
+    .eq("nation_id", nation.id)
+    .maybeSingle();
 
-      supabase
-        .from("nation_assets")
-        .select("storage_path, alt_text")
-        .eq("nation_id", nation.id)
-        .eq("asset_type", "flag")
-        .eq("status", "approved")
-        .maybeSingle(),
+  const flagAssetQuery = supabase
+    .from("nation_assets")
+    .select("storage_path, alt_text")
+    .eq("nation_id", nation.id)
+    .eq("asset_type", "flag")
+    .eq("status", "approved")
+    .maybeSingle();
 
-      nation.creator_public || nation.contact_public
-        ? supabase
-            .from("profiles")
-            .select("username, display_name, public_email_enabled, public_email")
-            .eq("id", nation.owner_id)
-            .maybeSingle()
-        : { data: null },
-    ]);
+  const ownerQuery =
+    nation.creator_public || nation.contact_public
+      ? supabase
+          .from("profiles")
+          .select("username, display_name, public_email_enabled, public_email")
+          .eq("id", nation.owner_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null });
+
+  const [claimResult, flagAssetResult, ownerResult] = await Promise.all([
+    claimQuery,
+    flagAssetQuery,
+    ownerQuery,
+  ]);
+
+  const claim = claimResult.data;
+  const flagAsset = flagAssetResult.data;
+  const owner = ownerResult.data;
 
   let flagUrl: string | null = null;
 
   if (flagAsset?.storage_path) {
     const { data: signedUrlData } = await supabase.storage
       .from(FLAG_BUCKET)
-      .createSignedUrl(flagAsset.storage_path, 3600);
+      .createSignedUrl(flagAsset.storage_path, SIGNED_FLAG_URL_SECONDS);
 
     flagUrl = signedUrlData?.signedUrl || null;
   }
 
+  const fillOpacity = Number(nation.fill_opacity);
+  const safeFillOpacity = Number.isFinite(fillOpacity) ? fillOpacity : 0.35;
+
   return (
     <main className="mx-auto max-w-5xl p-8">
-      <Link href="/atlas" className="text-sm text-muted-foreground">
+      <Link
+        href="/atlas"
+        className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+      >
         ← Back to atlas
       </Link>
 
       {query?.reported ? (
-        <div className="mt-6 rounded-md border p-4 text-sm">
-           Report submitted. A moderator will review it.
-       </div>
+        <div className="mt-6 rounded-md border bg-card p-4 text-sm">
+          Report submitted. A moderator will review it.
+        </div>
       ) : null}
 
       {query?.report_error ? (
-        <div className="mt-6 rounded-md border border-red-500 p-4 text-sm text-red-500">
+        <div className="mt-6 rounded-md border border-destructive p-4 text-sm text-destructive">
           {query.report_error}
         </div>
       ) : null}
 
-      <section className="mt-6 rounded-lg border p-6">
+      <section className="mt-6 rounded-lg border bg-card p-6">
         <div className="grid gap-6 md:grid-cols-[220px_1fr]">
           {flagUrl ? (
             <div className="relative h-36 overflow-hidden rounded-md border bg-muted">
@@ -126,7 +141,9 @@ async function NationProfile({ params, searchParams }: NationProfilePageProps) {
           )}
 
           <div>
-            <h1 className="text-3xl font-semibold">{nation.name}</h1>
+            <h1 className="font-brand text-4xl font-semibold tracking-tight">
+              {nation.name}
+            </h1>
             <p className="mt-3 text-muted-foreground">
               {nation.short_description}
             </p>
@@ -154,7 +171,7 @@ async function NationProfile({ params, searchParams }: NationProfilePageProps) {
                       href={nation.website_url}
                       rel="noreferrer"
                       target="_blank"
-                      className="underline"
+                      className="underline underline-offset-4"
                     >
                       Visit website
                     </a>
@@ -187,7 +204,7 @@ async function NationProfile({ params, searchParams }: NationProfilePageProps) {
       </section>
 
       {nation.long_description ? (
-        <section className="mt-8 rounded-lg border p-6">
+        <section className="mt-8 rounded-lg border bg-card p-6">
           <h2 className="text-xl font-medium">Profile</h2>
           <p className="mt-4 whitespace-pre-wrap text-muted-foreground">
             {nation.long_description}
@@ -195,22 +212,24 @@ async function NationProfile({ params, searchParams }: NationProfilePageProps) {
         </section>
       ) : null}
 
-      <section className="mt-8 rounded-lg border p-6">
+      <section className="mt-8 rounded-lg border bg-card p-6">
         <h2 className="text-xl font-medium">Mapped claim</h2>
 
         {claim?.geojson ? (
           <div className="mt-4 space-y-4">
-            <NationClaimPreviewWrapper
-              geojson={claim.geojson}
-              fillColour={nation.fill_colour}
-              borderColour={nation.border_colour}
-              fillOpacity={Number(nation.fill_opacity)}
-            />
+            <div className="microatlas-map-frame rounded-lg border bg-background">
+              <NationClaimPreviewWrapper
+                geojson={claim.geojson}
+                fillColour={nation.fill_colour}
+                borderColour={nation.border_colour}
+                fillOpacity={safeFillOpacity}
+              />
+            </div>
 
             <dl className="space-y-2 text-sm">
               <div>
                 <dt className="font-medium">Claim type</dt>
-                <dd className="text-muted-foreground">
+                <dd className="capitalize text-muted-foreground">
                   {claim.claim_type.replaceAll("_", " ")}
                 </dd>
               </div>
@@ -230,7 +249,7 @@ async function NationProfile({ params, searchParams }: NationProfilePageProps) {
         )}
       </section>
 
-      <section className="mt-8 rounded-lg border p-6">
+      <section className="mt-8 rounded-lg border bg-card p-6">
         <h2 className="text-xl font-medium">Report this entry</h2>
 
         <p className="mt-3 text-sm text-muted-foreground">

@@ -87,7 +87,7 @@ export function SiteNav() {
   }, [pathname, loadUserRole]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-[2000] border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
         <Link
           href="/"
