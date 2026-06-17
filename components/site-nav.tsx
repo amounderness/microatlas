@@ -4,9 +4,35 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { BrandMark } from "@/components/brand/brand-mark";
+import { Logo } from "@/components/brand/logo";
 import { createClient } from "@/lib/supabase/client";
 
 type ProfileRole = "user" | "moderator" | "admin";
+
+type NavLinkProps = {
+  href: string;
+  children: React.ReactNode;
+  pathname: string;
+};
+
+function NavLink({ href, children, pathname }: NavLinkProps) {
+  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+
+  return (
+    <Link
+      href={href}
+      className={[
+        "rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors",
+        isActive
+          ? "bg-secondary text-foreground"
+          : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
+      ].join(" ")}
+    >
+      {children}
+    </Link>
+  );
+}
 
 export function SiteNav() {
   const pathname = usePathname();
@@ -61,31 +87,57 @@ export function SiteNav() {
   }, [pathname, loadUserRole]);
 
   return (
-    <header className="border-b">
-      <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-8 py-4">
-        <Link href="/" className="font-semibold">
-          MicroAtlas
+    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
+        <Link
+          href="/"
+          aria-label="MicroAtlas home"
+          className="flex shrink-0 items-center"
+        >
+          <Logo className="hidden h-12 w-auto sm:block" />
+          <BrandMark className="h-11 w-11 sm:hidden" />
         </Link>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm">
-          <Link href="/atlas">Atlas</Link>
-          <Link href="/faq">FAQ</Link>
-          <Link href="/roadmap">Roadmap</Link>
-          
+        <div className="flex flex-wrap items-center justify-end gap-1.5">
+          <NavLink href="/atlas" pathname={pathname}>
+            Atlas
+          </NavLink>
+          <NavLink href="/faq" pathname={pathname}>
+            FAQ
+          </NavLink>
+          <NavLink href="/roadmap" pathname={pathname}>
+            Roadmap
+          </NavLink>
+
           {isLoggedIn ? (
             <>
-              <Link href="/dashboard">Dashboard</Link>
-              <Link href="/dashboard/profile">Profile</Link>
-              <Link href="/dashboard/nations">My Nations</Link>
+              <NavLink href="/dashboard" pathname={pathname}>
+                Dashboard
+              </NavLink>
+              <NavLink href="/dashboard/profile" pathname={pathname}>
+                Profile
+              </NavLink>
+              <NavLink href="/dashboard/nations" pathname={pathname}>
+                My Nations
+              </NavLink>
 
               {hasLoaded && isAdminOrModerator ? (
-                <Link href="/admin/moderation">Admin</Link>
+                <NavLink href="/admin/moderation" pathname={pathname}>
+                  Admin
+                </NavLink>
               ) : null}
             </>
           ) : (
             <>
-              <Link href="/auth/login">Sign in</Link>
-              <Link href="/auth/sign-up">Sign up</Link>
+              <NavLink href="/auth/login" pathname={pathname}>
+                Sign in
+              </NavLink>
+              <Link
+                href="/auth/sign-up"
+                className="rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Sign up
+              </Link>
             </>
           )}
         </div>

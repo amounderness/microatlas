@@ -4,57 +4,105 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    /*
+      MicroAtlas core palette
+      Hex reference:
+      Parchment       #F6F1E8
+      Ink Navy        #172033
+      Atlas Green     #2F5D50
+      Muted Slate     #60707A
+      Surveyor Gold   #C49A4A
+      Pale Blue Grey  #DDE8EA
+      Stone           #E8E0D2
+      Muted Red       #A84A3F
+    */
+
+    --ma-parchment: #f6f1e8;
+    --ma-ink-navy: #172033;
+    --ma-atlas-green: #2f5d50;
+    --ma-muted-slate: #60707a;
+    --ma-surveyor-gold: #c49a4a;
+    --ma-pale-blue-grey: #dde8ea;
+    --ma-stone: #e8e0d2;
+    --ma-muted-red: #a84a3f;
+
+    /*
+      shadcn/Tailwind semantic tokens.
+      Values are HSL triplets because shadcn usually expects:
+      hsl(var(--background))
+    */
+
+    --background: 39 44% 94%;
+    --foreground: 221 38% 15%;
+
+    --card: 39 44% 96%;
+    --card-foreground: 221 38% 15%;
+
+    --popover: 39 44% 96%;
+    --popover-foreground: 221 38% 15%;
+
+    --primary: 221 38% 15%;
+    --primary-foreground: 39 44% 94%;
+
+    --secondary: 38 32% 87%;
+    --secondary-foreground: 221 38% 15%;
+
+    --muted: 38 32% 87%;
+    --muted-foreground: 203 12% 43%;
+
+    --accent: 163 33% 28%;
+    --accent-foreground: 39 44% 94%;
+
+    --destructive: 6 46% 45%;
+    --destructive-foreground: 39 44% 94%;
+
+    --border: 38 32% 87%;
+    --input: 38 32% 87%;
+    --ring: 39 51% 53%;
+
+    --chart-1: 163 33% 28%;
+    --chart-2: 203 12% 43%;
+    --chart-3: 39 51% 53%;
+    --chart-4: 189 24% 89%;
+    --chart-5: 6 46% 45%;
+
     --radius: 0.5rem;
   }
+
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 221 38% 15%;
+    --foreground: 39 44% 94%;
+
+    --card: 221 38% 18%;
+    --card-foreground: 39 44% 94%;
+
+    --popover: 221 38% 18%;
+    --popover-foreground: 39 44% 94%;
+
+    --primary: 39 44% 94%;
+    --primary-foreground: 221 38% 15%;
+
+    --secondary: 163 33% 22%;
+    --secondary-foreground: 39 44% 94%;
+
+    --muted: 221 28% 24%;
+    --muted-foreground: 189 24% 82%;
+
+    --accent: 39 51% 53%;
+    --accent-foreground: 221 38% 15%;
+
+    --destructive: 6 46% 45%;
+    --destructive-foreground: 39 44% 94%;
+
+    --border: 221 28% 26%;
+    --input: 221 28% 26%;
+    --ring: 39 51% 53%;
+
+    --chart-1: 163 33% 38%;
+    --chart-2: 189 24% 72%;
+    --chart-3: 39 51% 53%;
+    --chart-4: 38 32% 70%;
+    --chart-5: 6 46% 55%;
   }
 }
 
@@ -62,7 +110,47 @@
   * {
     @apply border-border;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  ::selection {
+    background: var(--ma-surveyor-gold);
+    color: var(--ma-ink-navy);
+  }
+}
+
+@layer utilities {
+  .font-brand {
+    font-family: var(--font-brand), Georgia, serif;
+  }
+
+  .font-ui {
+    font-family: var(--font-ui), system-ui, sans-serif;
+  }
+
+  .bg-map-parchment {
+    background-color: var(--ma-parchment);
+  }
+
+  .text-ink {
+    color: var(--ma-ink-navy);
+  }
+
+  .text-atlas {
+    color: var(--ma-atlas-green);
+  }
+
+  .text-surveyor {
+    color: var(--ma-surveyor-gold);
+  }
+
+  .border-stone {
+    border-color: var(--ma-stone);
   }
 }

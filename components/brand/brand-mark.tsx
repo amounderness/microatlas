@@ -1,11 +1,12 @@
+type BrandMarkVariant = "default";
+
 type BrandMarkProps = {
-  variant?: "default" | "light";
+  variant?: BrandMarkVariant;
   className?: string;
 };
 
-const markSrc = {
+const markSrc: Record<BrandMarkVariant, string> = {
   default: "/brand/microatlas-mark.svg",
-  light: "/brand/microatlas-mark-light.svg",
 };
 
 export function BrandMark({ variant = "default", className = "" }: BrandMarkProps) {
@@ -15,6 +16,8 @@ export function BrandMark({ variant = "default", className = "" }: BrandMarkProp
       alt=""
       aria-hidden="true"
       className={className}
+      loading="eager"
+      decoding="async"
     />
   );
 }

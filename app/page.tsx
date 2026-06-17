@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { BrandMark } from "@/components/brand/brand-mark";
+import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 
 const profileItems = [
@@ -88,28 +90,34 @@ const futureItems = [
 export default function Home() {
   return (
     <main>
-      <section className="border-b">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.25fr_0.75fr] md:py-24">
+      <section className="border-b bg-background">
+        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.15fr_0.85fr] md:py-24">
           <div className="max-w-3xl">
-            <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              Closed beta · Map and directory
+            <p className="text-sm font-medium uppercase tracking-[0.22em] text-muted-foreground">
+              Closed beta · Community Atlas
             </p>
 
-            <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">
+            <div className="mt-6">
+              <Logo variant="tagline" className="h-auto w-full max-w-2xl" />
+            </div>
+
+            <h1
+              className="mt-8 text-4xl font-semibold tracking-tight md:text-6xl"
+              style={{ fontFamily: "var(--font-brand), Georgia, serif" }}
+            >
               Explore the micronational world.
             </h1>
 
             <p className="mt-6 text-xl leading-8 text-muted-foreground">
-              MicroAtlas is a map and directory for micronations,
-              self-declared states, and experimental projects. It helps
-              visitors find nations, explore mapped claims, and follow projects
-              back to their own websites and communities.
+              MicroAtlas helps visitors find micronations, self-declared states,
+              and experimental civic projects through a public atlas of profiles,
+              mapped claims, flags, and external community links.
             </p>
 
             <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
-              If you run a serious micronation, MicroAtlas gives you a simple
-              public listing: a profile, a flag, a mapped or symbolic claim,
-              and links to where your community already lives.
+              If you run a serious micronation, MicroAtlas gives you a simple public
+              listing: a profile, a flag, a mapped or symbolic claim, and links to
+              where your community already lives.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -131,10 +139,20 @@ export default function Home() {
             </div>
           </div>
 
-          <aside className="rounded-lg border bg-muted/30 p-6">
-            <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              What your listing can show
-            </p>
+          <aside className="rounded-xl border bg-card p-6 shadow-sm">
+            <div className="flex items-start gap-4">
+              <BrandMark className="h-14 w-14 shrink-0" />
+
+              <div>
+                <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                  What your listing can show
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  A public-facing record designed for discovery, context, and clear
+                  onward links.
+                </p>
+              </div>
+            </div>
 
             <div className="mt-6 rounded-lg border bg-background p-4">
               <div className="flex items-start justify-between gap-4">
@@ -144,10 +162,18 @@ export default function Home() {
                     Public profile · Mapped claim · External links
                   </p>
                 </div>
-                <div className="h-10 w-14 rounded-sm border bg-secondary" />
+
+                <div className="flex h-10 w-14 items-center justify-center rounded-sm border bg-secondary">
+                  <BrandMark className="h-7 w-7" />
+                </div>
               </div>
-              <div className="mt-5 h-24 rounded-md border bg-muted/40 p-3">
-                <div className="h-full rounded-sm border border-dashed border-muted-foreground/40 bg-background/70" />
+
+              <div className="mt-5 rounded-md border bg-muted/40 p-3">
+                <div className="relative h-28 overflow-hidden rounded-sm border bg-background/80">
+                  <div className="absolute left-4 top-4 h-16 w-24 rounded-full border border-dashed border-muted-foreground/40 bg-secondary/70" />
+                  <div className="absolute bottom-4 right-5 h-14 w-20 rounded-full border border-dashed border-muted-foreground/40 bg-background" />
+                  <div className="absolute inset-x-0 bottom-0 h-8 bg-secondary/60" />
+                </div>
               </div>
             </div>
 
