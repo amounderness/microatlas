@@ -120,6 +120,10 @@ export default function Home() {
               <Button asChild size="lg" variant="outline">
                 <Link href="/auth/sign-up">Request beta access</Link>
               </Button>
+
+              <Button asChild size="lg" variant="outline">
+                <Link href="/faq">Read the FAQ</Link>
+              </Button>
             </div>
           </div>
 
